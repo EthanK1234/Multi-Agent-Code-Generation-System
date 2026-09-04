@@ -6,7 +6,7 @@ majority pass. The default assumption is CODE_WRONG; TESTS_WRONG requires
 step-by-step reasoning against the spec, not just agreement with code output.
 """
 
-from __future__ import annotations
+from __future__ import annotations 
 
 import re
 
