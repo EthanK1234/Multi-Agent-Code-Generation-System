@@ -1,1 +1,0 @@
-"""Multi-agent coding system using differential testing against a brute-force reference to catch bugs that pass AI-written tests. """
