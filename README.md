@@ -21,36 +21,26 @@ Two solutions written in completely different ways rarely share the same bug. Wh
 ## How it works
 
 ```mermaid
-flowchart TD
-    A[Problem spec] --> B[Brute-force reference<br/>+ random input generator]
-    B --> C{Matches the spec's<br/>own examples?}
-    C -- no --> B
-    C -- yes --> D[Run reference on ~300 inputs<br/>cache input → answer]
-    A --> E[Pytest suite<br/>written from spec only]
-
-    D --> F[Generate N candidates<br/>in parallel]
-    E --> F
-    F --> G[Pytest filter<br/>drop broken code]
-    G --> H[Differential check<br/>compare to cached answers]
-    H --> I{Matches on<br/>every input?}
-    I -- yes --> J[✅ Final solution]
-    I -- no --> K[Send back failing inputs<br/>got X, expected Y]
-    K --> F
+flowchart LR
+    A[Spec] --> B[Reference + tests]
+    B --> C[Generate N candidates]
+    C --> D[Pytest filter]
+    D --> E[Compare to reference]
+    E -- match --> F[Final solution]
+    E -- mismatch --> C
 ```
 
-**Setup** runs once per problem. It writes the reference, checks that it reproduces the examples in the problem statement, and caches its answers.
-
-**The loop** generates candidates, throws out anything that fails the quick pytest check, then compares the survivors to the reference on every cached input. It stops as soon as one candidate matches everywhere.
+**Setup** writes the reference, checks it against the problem's examples, and caches its answers on ~300 inputs. **The loop** generates candidates, filters them with pytest, and compares the survivors to the reference until one matches everywhere.
 
 ## What's inside
 
-| | Component | What it does |
-|:-:|---|---|
-| 🧱 | **Reference** | Deliberately simple brute-force solution. Ignores speed, since optimization is where bugs hide. Uses the stronger model. |
-| 🎲 | **Input generator** | Random valid inputs, kept small and aimed at edge cases. |
-| 🧪 | **Tester** | Pytest suite written from the spec before any code exists. A cheap first filter. |
-| ⚙️ | **Generator** | Writes the optimized solution, N at a time, on a fast model. |
-| 🔍 | **Differential check** | Runs candidates on every cached input and compares to the reference. The real judge. |
+| Component | What it does |
+|---|---|
+| **Reference** | Deliberately simple brute-force solution. Ignores speed, since optimization is where bugs hide. Uses the stronger model. |
+| **Input generator** | Random valid inputs, kept small and aimed at edge cases. |
+| **Tester** | Pytest suite written from the spec before any code exists. A cheap first filter. |
+| **Generator** | Writes the optimized solution, N at a time, on a fast model. |
+| **Differential check** | Runs candidates on every cached input and compares to the reference. The real judge. |
 
 ## Design choices
 
