@@ -1,6 +1,7 @@
-<h1 align="center">Multi-Agent Code Generation System</h1>
+<h1 align="center">MAGL</h1>
 
 <p align="center">
+  <b>Multi-Agent Generation Loop</b><br>
   AI-generated code, checked against a reference it didn't write.
 </p>
 
@@ -14,7 +15,7 @@
 
 Most AI coding tools let the model grade its own homework: it writes the code, writes the tests, and says everything passes. But model-written tests often assert the wrong answer, so "passes the tests" doesn't mean "correct."
 
-**This system doesn't trust the tests.** For every problem it builds two independent solutions: a fast, optimized candidate and a slow, brute-force reference. Then it runs both on hundreds of random inputs. If they ever disagree, the exact failing input goes back to the generator to fix.
+**MAGL doesn't trust the tests.** For every problem it builds two independent solutions: a fast, optimized candidate and a slow, brute-force reference. Then it runs both on hundreds of random inputs. If they ever disagree, the exact failing input goes back to the generator to fix.
 
 Two solutions written in completely different ways rarely share the same bug. When they agree everywhere, you can trust the answer.
 
@@ -22,33 +23,35 @@ Two solutions written in completely different ways rarely share the same bug. Wh
 
 ```mermaid
 flowchart TD
-    A[Problem spec] --> B[Brute-force reference + inputs]
-    B --> C{Matches spec examples?}
+    A[Problem spec] --> B[Brute-force reference<br/>+ random input generator]
+    B --> C{Matches the spec's<br/>own examples?}
     C -- no --> B
-    C -- yes --> D[Cache answers on ~300 inputs]
-    A --> E[Pytest suite from spec]
+    C -- yes --> D[Run reference on ~300 inputs<br/>cache input → answer]
+    A --> E[Pytest suite<br/>written from spec only]
 
-    D --> F[Generate N candidates]
+    D --> F[Generate N candidates<br/>in parallel]
     E --> F
-    F --> G[Pytest filter]
-    G --> H[Compare to cached answers]
-    H --> I{Match on every input?}
-    I -- yes --> J[Final solution]
-    I -- no --> K[Send back failing inputs]
+    F --> G[Pytest filter<br/>drop broken code]
+    G --> H[Differential check<br/>compare to cached answers]
+    H --> I{Matches on<br/>every input?}
+    I -- yes --> J[✅ Final solution]
+    I -- no --> K[Send back failing inputs<br/>got X, expected Y]
     K --> F
 ```
 
-**Setup** writes the reference, checks it against the problem's examples, and caches its answers on ~300 inputs. **The loop** generates candidates, filters them with pytest, and compares the survivors to the reference until one matches everywhere.
+**Setup** runs once per problem. It writes the reference, checks that it reproduces the examples in the problem statement, and caches its answers.
+
+**The loop** generates candidates, throws out anything that fails the quick pytest check, then compares the survivors to the reference on every cached input. It stops as soon as one candidate matches everywhere.
 
 ## What's inside
 
-| Component | What it does |
-|---|---|
-| **Reference** | Deliberately simple brute-force solution. Ignores speed, since optimization is where bugs hide. Uses the stronger model. |
-| **Input generator** | Random valid inputs, kept small and aimed at edge cases. |
-| **Tester** | Pytest suite written from the spec before any code exists. A cheap first filter. |
-| **Generator** | Writes the optimized solution, N at a time, on a fast model. |
-| **Differential check** | Runs candidates on every cached input and compares to the reference. The real judge. |
+| | Component | What it does |
+|:-:|---|---|
+| 🧱 | **Reference** | Deliberately simple brute-force solution. Ignores speed, since optimization is where bugs hide. Uses the stronger model. |
+| 🎲 | **Input generator** | Random valid inputs, kept small and aimed at edge cases. |
+| 🧪 | **Tester** | Pytest suite written from the spec before any code exists. A cheap first filter. |
+| ⚙️ | **Generator** | Writes the optimized solution, N at a time, on a fast model. |
+| 🔍 | **Differential check** | Runs candidates on every cached input and compares to the reference. The real judge. |
 
 ## Design choices
 
