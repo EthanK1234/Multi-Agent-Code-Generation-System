@@ -1,7 +1,6 @@
-<h1 align="center">MAGL</h1>
+<h1 align="center">Multi-Agent Code Generation System</h1>
 
 <p align="center">
-  <b>Multi-Agent Generation Loop</b><br>
   AI-generated code, checked against a reference it didn't write.
 </p>
 
@@ -15,7 +14,7 @@
 
 Most AI coding tools let the model grade its own homework: it writes the code, writes the tests, and says everything passes. But model-written tests often assert the wrong answer, so "passes the tests" doesn't mean "correct."
 
-**MAGL doesn't trust the tests.** For every problem it builds two independent solutions: a fast, optimized candidate and a slow, brute-force reference. Then it runs both on hundreds of random inputs. If they ever disagree, the exact failing input goes back to the generator to fix.
+**This system doesn't trust the tests.** For every problem it builds two independent solutions: a fast, optimized candidate and a slow, brute-force reference. Then it runs both on hundreds of random inputs. If they ever disagree, the exact failing input goes back to the generator to fix.
 
 Two solutions written in completely different ways rarely share the same bug. When they agree everywhere, you can trust the answer.
 
